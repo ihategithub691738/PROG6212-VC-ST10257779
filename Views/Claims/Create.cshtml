@@ -1,0 +1,55 @@
+@model PROG6212_VC_ST10257779.ViewModels.ClaimCreateViewModel
+@{
+    var lecturers = (IEnumerable<PROG6212_VC_ST10257779.Models.Lecturer>)ViewBag.Lecturers;
+}
+<h2>Submit Claim</h2>
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="form">
+    <div class="row">
+        <label>Lecturer</label>
+        <select asp-for="LecturerId" class="input">
+            <option value="">-- Select Lecturer --</option>
+            @foreach (var l in lecturers)
+            {
+                <option value="@l.Id">@l.FullName (@l.StaffNo)</option>
+            }
+        </select>
+        <span asp-validation-for="LecturerId" class="text-danger"></span>
+    </div>
+    <div class="row two">
+        <div>
+            <label>Year</label>
+            <input asp-for="Year" class="input" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+        <div>
+            <label>Month</label>
+            <input asp-for="Month" class="input" />
+            <span asp-validation-for="Month" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="row two">
+        <div>
+            <label>Hours Worked</label>
+            <input asp-for="HoursWorked" class="input" />
+            <span asp-validation-for="HoursWorked" class="text-danger"></span>
+        </div>
+        <div>
+            <label>Hourly Rate (R)</label>
+            <input asp-for="HourlyRate" class="input" />
+            <span asp-validation-for="HourlyRate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="row">
+        <label>Supporting Document (placeholder)</label>
+        <input type="file" class="input" />
+        <small>Files are not persisted at this stage.</small>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn">Submit</button>
+        <a class="btn secondary" asp-action="Index">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

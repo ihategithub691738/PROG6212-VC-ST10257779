@@ -1,0 +1,24 @@
+@{
+    var rows = (IEnumerable<dynamic>)Model;
+}
+<h2>Approval Queue</h2>
+<div class="card">
+<table class="table">
+    <thead><tr><th>Approval Id</th><th>Claim</th><th>Lecturer</th><th>Role</th><th>Status</th><th>Amount</th></tr></thead>
+    <tbody>
+    @foreach (var r in rows)
+    {
+        <tr>
+            <td>@r.Id</td>
+            <td>#@r.ClaimId</td>
+            <td>@r.Lecturer</td>
+            <td>@r.Role</td>
+            <td><span class="badge">@r.Status</span></td>
+            <td>R @r.Amount</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+
+

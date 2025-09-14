@@ -1,0 +1,37 @@
+@{
+    var items = (IEnumerable<dynamic>)Model;
+}
+<h2>Claims</h2>
+@if (TempData["Success"] != null)
+{
+    <div class="alert success">@TempData["Success"]</div>
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Lecturer</th>
+            <th>Period</th>
+            <th>Hours</th>
+            <th>Rate</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var c in items)
+    {
+        <tr>
+            <td>@c.Id</td>
+            <td>@c.Lecturer</td>
+            <td>@($"{c.Month:D2}/{c.Year}")</td>
+            <td>@c.HoursWorked</td>
+            <td>R @c.HourlyRate</td>
+            <td><strong>R @c.Amount</strong></td>
+            <td><span class="badge">@c.Status</span></td>
+            <td><a class="btn small" asp-action="Details" asp-route-id="@c.Id">Details</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,50 @@
+@model PROG6212_VC_ST10257779.Models.Claim
+@{
+    var lecturer = (PROG6212_VC_ST10257779.Models.Lecturer)ViewBag.Lecturer;
+    var docs = (IEnumerable<PROG6212_VC_ST10257779.Models.SupportDocument>)ViewBag.Documents;
+    var approvals = (IEnumerable<PROG6212_VC_ST10257779.Models.Approval>)ViewBag.Approvals;
+}
+<h2>Claim #@Model.Id</h2>
+<div class="grid">
+    <div class="card">
+        <h3>Summary</h3>
+        <p><strong>Lecturer:</strong> @lecturer.FullName (@lecturer.StaffNo)</p>
+        <p><strong>Period:</strong> @Model.Month/@Model.Year</p>
+        <p><strong>Hours:</strong> @Model.HoursWorked</p>
+        <p><strong>Rate:</strong> R @Model.HourlyRate</p>
+        <p><strong>Total:</strong> <span class="badge">R @Model.Amount</span></p>
+        <p><strong>Status:</strong> <span class="badge">@Model.Status</span></p>
+    </div>
+    <div class="card">
+        <h3>Supporting Documents</h3>
+        <ul>
+            @foreach (var d in docs)
+            {
+                <li>@d.FileName (@d.FileType)</li>
+            }
+            @if (!docs.Any())
+            {
+                <li>No documents uploaded (prototype)</li>
+            }
+        </ul>
+    </div>
+    <div class="card">
+        <h3>Approval Flow</h3>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>Role</th><th>Status</th><th>Actioned</th></tr></thead>
+                <tbody>
+                @foreach (var a in approvals)
+                {
+                    <tr>
+                        <td>@a.Role</td>
+                        <td>@a.Status</td>
+                        <td>@(a.ActionedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<a class="btn secondary" asp-action="Index">Back</a>

@@ -1,0 +1,20 @@
+<section class="grid">
+    <div class="card">
+        <h2>Welcome</h2>
+        <p>This is a <strong>front-end prototype</strong> of the Contract Monthly Claim System. Use the navigation to explore the required screens.</p>
+        <ul>
+            <li>Lecturers can submit monthly claims (GUI only).</li>
+            <li>Programme Coordinators and Academic Managers can verify and approve claims.</li>
+            <li>Supporting documents can be attached (placeholder field).</li>
+            <li>Statuses are visible at each stage for transparency.</li>
+        </ul>
+    </div>
+    <div class="card">
+        <h3>Quick Actions</h3>
+        <p>
+            <a class="btn" asp-controller="Claims" asp-action="Create">Submit a Claim</a>
+            <a class="btn secondary" asp-controller="Claims" asp-action="Index">View Claims</a>
+            <a class="btn secondary" asp-controller="Approvals" asp-action="Index">Approval Queue</a>
+        </p>
+    </div>
+</section>
