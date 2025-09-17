@@ -1,24 +1,180 @@
+﻿@* Views/Approvals/ApprovalQueue.cshtml *@
+@using System.Globalization
+@model IEnumerable<dynamic>
+
 @{
-    var rows = (IEnumerable<dynamic>)Model;
+    ViewData["Title"] = "Approval Queue";
+    var culture = CultureInfo.CreateSpecificCulture("en-ZA");
+    var rows = Model ?? Enumerable.Empty<dynamic>();
 }
-<h2>Approval Queue</h2>
-<div class="card">
-<table class="table">
-    <thead><tr><th>Approval Id</th><th>Claim</th><th>Lecturer</th><th>Role</th><th>Status</th><th>Amount</th></tr></thead>
-    <tbody>
-    @foreach (var r in rows)
-    {
-        <tr>
-            <td>@r.Id</td>
-            <td>#@r.ClaimId</td>
-            <td>@r.Lecturer</td>
-            <td>@r.Role</td>
-            <td><span class="badge">@r.Status</span></td>
-            <td>R @r.Amount</td>
-        </tr>
+
+<style>
+    /* ---- Modern, minimal, dependency-free styling ---- */
+    :root {
+      --bg: #0b0b0b;
+      --card: #111;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #222;
+      --line-2: #333;
+      --shadow: rgba(0,0,0,.25);
+      --accent: #0864a3;
+      --radius: 16px;
     }
-    </tbody>
-</table>
+    .aq-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; color: var(--text); }
+    .aq-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+               padding: 1rem; box-shadow: 0 6px 24px var(--shadow); }
+    .aq-header { display: flex; gap: .75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .aq-title { margin: 0; font-size: 1.35rem; letter-spacing: .2px; }
+    .aq-subtle { color: var(--muted); font-size: .9rem; }
+    .aq-toolbar { display: flex; gap: .5rem; align-items: center; }
+    .aq-search { background: #0f0f10; border: 1px solid var(--line); color: var(--text); border-radius: 10px;
+                 padding: .55rem .75rem; width: 260px; }
+    .aq-btn { background: #1c1c1f; border: 1px solid var(--line); color: var(--text); border-radius: 10px;
+              padding: .55rem .8rem; cursor: pointer; }
+    .aq-btn:hover { background: #222328; }
+    .aq-table-wrap { margin-top: .75rem; overflow: auto; border: 1px solid var(--line); border-radius: 14px; }
+    table.aq-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    thead.aq-thead th { position: sticky; top: 0; background: #121214; color: #fff; text-align: left;
+                        font-weight: 600; border-bottom: 1px solid var(--line-2); padding: .85rem .7rem; white-space: nowrap; }
+    thead.aq-thead th button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; }
+    thead.aq-thead th button .aq-sort { font-size: .9em; color: var(--muted); }
+    tbody.aq-tbody td { border-bottom: 1px dashed var(--line); padding: .75rem .7rem; vertical-align: middle; }
+    tbody.aq-tbody tr:hover { background: #0e0e11; }
+    td.aq-right { text-align: right; }
+    .aq-badge { display: inline-block; padding: .25rem .55rem; border-radius: 999px; font-size: .75rem; border: 1px solid var(--line-2); }
+    .aq-badge.Draft { background:#1f2937; }
+    .aq-badge.Submitted { background:#0b3b68; }
+    .aq-badge.Verified { background:#1f4632; }
+    .aq-badge.Approved { background:#1b4332; }
+    .aq-badge.Rejected { background:#4a1f2a; }
+    .aq-badge.Paid { background:#2b2942; }
+    .aq-footer { display:flex; justify-content: space-between; align-items:center; margin-top:.75rem; gap:.75rem; }
+    .aq-muted { color: var(--muted); }
+</style>
+
+<div class="aq-container">
+    <div class="aq-card">
+        <div class="aq-header">
+            <h2 class="aq-title">Approval Queue</h2>
+            <div class="aq-toolbar">
+                <input id="aqSearch" class="aq-search" type="search" placeholder="Search claim #, lecturer, role, or status…" oninput="aqFilterRows(this.value)" />
+                <button class="aq-btn" type="button" onclick="document.getElementById('aqSearch').value=''; aqFilterRows('')">Reset</button>
+            </div>
+        </div>
+
+        <div class="aq-table-wrap">
+            <table id="approvalTable" class="aq-table" aria-label="Approval Queue">
+                <thead class="aq-thead">
+                    <tr>
+                        <th><button type="button" data-col="0" onclick="aqSort(this)"><span>Approval Id</span><span class="aq-sort">⇅</span></button></th>
+                        <th><button type="button" data-col="1" onclick="aqSort(this)"><span>Claim</span><span class="aq-sort">⇅</span></button></th>
+                        <th><button type="button" data-col="2" onclick="aqSort(this)"><span>Lecturer</span><span class="aq-sort">⇅</span></button></th>
+                        <th><button type="button" data-col="3" onclick="aqSort(this)"><span>Role</span><span class="aq-sort">⇅</span></button></th>
+                        <th><button type="button" data-col="4" onclick="aqSort(this)"><span>Status</span><span class="aq-sort">⇅</span></button></th>
+                        <th class="aq-right"><button type="button" data-col="5" onclick="aqSort(this)"><span>Amount</span><span class="aq-sort">⇅</span></button></th>
+                    </tr>
+                </thead>
+                <tbody class="aq-tbody">
+                    @if (rows.Any())
+                    {
+                        foreach (var r in rows)
+                        {
+                            var status = (r.Status ?? "").ToString();
+                            <tr>
+                                <td>@r.Id</td>
+                                <td>#@r.ClaimId</td>
+                                <td>@r.Lecturer</td>
+                                <td>@r.Role</td>
+                                <td><span class="aq-badge @status">@status</span></td>
+                                <td class="aq-right">@string.Format(culture, "R {0:N2}", r.Amount)</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="aq-muted">No approvals in the queue.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="aq-footer">
+            <span class="aq-subtle">Rendered @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</span>
+            <span class="aq-subtle" id="aqCount">
+                @rows.Count() item@(rows.Count() == 1 ? "" : "s")
+            </span>
+        </div>
+    </div>
 </div>
 
+<script>
+    // --------- Search filter ----------
+    function aqFilterRows(q) {
+      const query = (q || "").toLowerCase();
+      const rows = document.querySelectorAll("#approvalTable tbody tr");
+      let visible = 0;
+      rows.forEach(row => {
+        const txt = row.innerText.toLowerCase();
+        const show = txt.includes(query);
+        row.style.display = show ? "" : "none";
+        if (show) visible++;
+      });
+      const count = document.getElementById("aqCount");
+      if (count) count.textContent = visible + " item" + (visible === 1 ? "" : "s");
+    }
 
+    // --------- Click-to-sort ----------
+    let aqSortState = { col: null, dir: 1 }; // 1 asc, -1 desc
+
+    function aqSort(btn) {
+      const col = parseInt(btn.dataset.col, 10);
+      const tbody = document.querySelector("#approvalTable tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr")).filter(r => r.style.display !== "none");
+
+      // Toggle direction if same col
+      if (aqSortState.col === col) {
+        aqSortState.dir = -aqSortState.dir;
+      } else {
+        aqSortState = { col, dir: 1 };
+      }
+
+      const statusOrder = ["Draft","Submitted","Verified","Approved","Rejected","Paid"];
+
+      function cellVal(tr, idx) {
+        return (tr.children[idx]?.innerText || "").trim();
+      }
+
+      function parseAmount(val) {
+        // Expect "R 1 234.56" or "R 1 234.56"
+        return parseFloat(val.replace(/[^\d.,-]/g, "").replace(/,/g, ""));
+      }
+
+      function parseClaim(val) {
+        // "#5001" -> 5001
+        const m = val.match(/#(\d+)/);
+        return m ? parseInt(m[1], 10) : 0;
+      }
+
+      rows.sort((a, b) => {
+        let av = cellVal(a, col), bv = cellVal(b, col), cmp = 0;
+
+        if (col === 0) { // Approval Id numeric
+          cmp = (parseInt(av, 10) || 0) - (parseInt(bv, 10) || 0);
+        } else if (col === 1) { // Claim "#123"
+          cmp = parseClaim(av) - parseClaim(bv);
+        } else if (col === 4) { // Status by defined order
+          cmp = statusOrder.indexOf(av) - statusOrder.indexOf(bv);
+        } else if (col === 5) { // Amount currency
+          cmp = parseAmount(av) - parseAmount(bv);
+        } else {
+          cmp = av.localeCompare(bv, undefined, { sensitivity: "base" });
+        }
+        return cmp * aqSortState.dir;
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+    }
+</script>

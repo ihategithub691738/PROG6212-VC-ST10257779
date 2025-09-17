@@ -2,54 +2,346 @@
 @{
     var lecturers = (IEnumerable<PROG6212_VC_ST10257779.Models.Lecturer>)ViewBag.Lecturers;
 }
-<h2>Submit Claim</h2>
-<form asp-action="Create" method="post" enctype="multipart/form-data" class="form">
-    <div class="row">
-        <label>Lecturer</label>
-        <select asp-for="LecturerId" class="input">
-            <option value="">-- Select Lecturer --</option>
-            @foreach (var l in lecturers)
-            {
-                <option value="@l.Id">@l.FullName (@l.StaffNo)</option>
+
+<section class="ui-wrap">
+    <div class="ui-card">
+        <header class="ui-head">
+            <h2>Submit Claim</h2>
+            <p class="ui-sub">Complete the fields below and attach a supporting document (optional for this prototype).</p>
+        </header>
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data" class="ui-form">
+            <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+
+            <!-- Lecturer -->
+            <div class="field">
+                <label for="LecturerId">Lecturer <span class="req">*</span></label>
+                <select asp-for="LecturerId" id="LecturerId" class="input">
+                    <option value="">— Select Lecturer —</option>
+                    @foreach (var l in lecturers)
+                    {
+                        <option value="@l.Id">@l.FullName (@l.StaffNo)</option>
+                    }
+                </select>
+                <span asp-validation-for="LecturerId" class="val"></span>
+            </div>
+
+            <!-- Year & Month -->
+            <div class="field two">
+                <div>
+                    <label for="Year">Year <span class="req">*</span></label>
+                    <input asp-for="Year" id="Year" class="input" type="number" min="2020" max="2035" step="1" placeholder="e.g., 2025" />
+                    <span asp-validation-for="Year" class="val"></span>
+                </div>
+                <div>
+                    <label for="Month">Month <span class="req">*</span></label>
+                    <select asp-for="Month" id="Month" class="input">
+                        <option value="">— Select Month —</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <span asp-validation-for="Month" class="val"></span>
+                </div>
+            </div>
+
+            <!-- Hours & Rate -->
+            <div class="field two">
+                <div>
+                    <label for="HoursWorked">Hours Worked <span class="req">*</span></label>
+                    <input asp-for="HoursWorked" id="HoursWorked" class="input" type="number" min="0" step="0.5" placeholder="e.g., 12.5" />
+                    <span asp-validation-for="HoursWorked" class="val"></span>
+                </div>
+                <div>
+                    <label for="HourlyRate">Hourly Rate (R) <span class="req">*</span></label>
+                    <div class="affix">
+                        <span class="pre">R</span>
+                        <input asp-for="HourlyRate" id="HourlyRate" class="input no-pad" type="number" min="0" step="0.01" placeholder="e.g., 350.00" />
+                    </div>
+                    <span asp-validation-for="HourlyRate" class="val"></span>
+                </div>
+            </div>
+
+            <!-- Total (computed locally) -->
+            <div class="field total">
+                <div class="pill">
+                    <span>Estimated Total</span>
+                    <strong id="totalAmount">R 0.00</strong>
+                </div>
+                <small class="muted">Calculated as Hours × Rate. Final computation persists server-side.</small>
+            </div>
+
+            <!-- File -->
+            <div class="field">
+                <label for="SupportFile">Supporting Document (placeholder)</label>
+                <input id="SupportFile" name="SupportFile" type="file" class="input file" />
+                <small class="muted">Files are not persisted at this stage.</small>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <button type="submit" class="btn">Submit Claim</button>
+                <a class="btn secondary" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<style>
+    :root {
+        --bg: #0b0b0b;
+        --card: #101114;
+        --text: #e6e8ec;
+        --muted: #a0a6b0;
+        --line: #1b1c21;
+        --line2: #2b2e36;
+        --accent: #0b6fc2;
+        --accent-2: #0a5596;
+        --good: #1f7a4d;
+        --warn: #91580f;
+        --err: #b54747;
+        --radius: 18px;
+        --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    .ui-wrap {
+        max-width: 900px;
+        margin: 1.25rem auto;
+        padding: 0 1rem;
+        color: var(--text);
+    }
+
+    .ui-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.1rem 1.2rem;
+        position: relative;
+    }
+
+        .ui-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(11,111,194,.35), rgba(255,255,255,0), rgba(11,111,194,.18));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+    .ui-head h2 {
+        margin: .1rem 0 .4rem;
+        letter-spacing: .2px;
+        font-size: 1.3rem;
+    }
+
+    .ui-sub {
+        color: var(--muted);
+        margin: 0 0 .6rem;
+    }
+
+    .ui-form {
+        display: grid;
+        gap: .9rem;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+    }
+
+        .field.two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .8rem;
+        }
+  
+    {
+        grid-template-columns: 1fr;
+    }
+
+    }
+
+    label {
+        font-weight: 600;
+        letter-spacing: .2px;
+    }
+
+    .req {
+        color: var(--err);
+    }
+
+    .input {
+        background: #0f1116;
+        color: var(--text);
+        border: 1px solid var(--line2);
+        border-radius: 12px;
+        padding: .6rem .8rem;
+        outline: none;
+    }
+
+        .input:focus {
+            border-color: #2f87c9;
+            box-shadow: 0 0 0 3px #0b6fc233;
+        }
+
+    /* MVC error classes */
+    .input-validation-error {
+        border-color: var(--err) !important;
+    }
+
+    .field .val {
+        color: var(--err);
+        font-size: .85rem;
+    }
+
+    /* Currency affix */
+    .affix {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        background: #0f1116;
+        border: 1px solid var(--line2);
+        border-radius: 12px;
+        padding: .55rem .65rem;
+    }
+
+        .affix .pre {
+            opacity: .9;
+        }
+
+        .affix .no-pad {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            width: 100%;
+        }
+
+    /* Total pill */
+    .field.total {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+    }
+
+    .pill {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #0f1319;
+        border: 1px solid #1d2a36;
+        border-radius: 12px;
+        padding: .65rem .8rem;
+    }
+
+        .pill strong {
+            font-size: 1.05rem;
+        }
+
+    .muted {
+        color: var(--muted);
+    }
+
+    /* Buttons */
+    .actions {
+        display: flex;
+        gap: .6rem;
+        flex-wrap: wrap;
+        margin-top: .2rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: linear-gradient(180deg,var(--accent),var(--accent-2));
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.06);
+        padding: .6rem .95rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        line-height: 1;
+        transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+        box-shadow: 0 8px 22px rgba(11,111,194,.28);
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary {
+            background: #1b1d23;
+            color: var(--text);
+            border: 1px solid var(--line2);
+            box-shadow: none;
+        }
+
+            .btn.secondary:hover {
+                background: #20232a;
             }
-        </select>
-        <span asp-validation-for="LecturerId" class="text-danger"></span>
-    </div>
-    <div class="row two">
-        <div>
-            <label>Year</label>
-            <input asp-for="Year" class="input" />
-            <span asp-validation-for="Year" class="text-danger"></span>
-        </div>
-        <div>
-            <label>Month</label>
-            <input asp-for="Month" class="input" />
-            <span asp-validation-for="Month" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="row two">
-        <div>
-            <label>Hours Worked</label>
-            <input asp-for="HoursWorked" class="input" />
-            <span asp-validation-for="HoursWorked" class="text-danger"></span>
-        </div>
-        <div>
-            <label>Hourly Rate (R)</label>
-            <input asp-for="HourlyRate" class="input" />
-            <span asp-validation-for="HourlyRate" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="row">
-        <label>Supporting Document (placeholder)</label>
-        <input type="file" class="input" />
-        <small>Files are not persisted at this stage.</small>
-    </div>
-    <div class="actions">
-        <button type="submit" class="btn">Submit</button>
-        <a class="btn secondary" asp-action="Index">Cancel</a>
-    </div>
-</form>
+   
+    {
+        transition: none;
+    }
+
+    }
+
+    /* File input */
+    .input.file {
+        padding: .5rem;
+    }
+
+    /* Validation summary */
+    .val-summary {
+        background: #1b1515;
+        color: #f2cccc;
+        border: 1px solid #5c2d2d;
+        border-radius: 12px;
+        padding: .6rem .8rem;
+        display: none;
+    }
+
+        .validation-summary-errors, .val-summary:has(ul) {
+            display: block;
+        }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function(){
+          const hrs = document.getElementById('HoursWorked');
+          const rate = document.getElementById('HourlyRate');
+          const out = document.getElementById('totalAmount');
+
+          function fmt(n){
+            if (isNaN(n)) n = 0;
+            return 'R ' + n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
+          function calc(){
+            const h = parseFloat(hrs?.value || '0');
+            const r = parseFloat(rate?.value || '0');
+            out.textContent = fmt(h * r);
+          }
+          hrs?.addEventListener('input', calc);
+          rate?.addEventListener('input', calc);
+          // initial
+          calc();
+        })();
+    </script>
 }

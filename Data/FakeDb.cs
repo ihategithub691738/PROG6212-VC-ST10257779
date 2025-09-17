@@ -50,7 +50,6 @@ namespace PROG6212_VC_ST10257779.Data
 }
 
 /*
- * Code assistance: OpenAI ChatGPT
  * Code assistance: STACKOVERFLOW
  * Date: 2025-09-14
  */
